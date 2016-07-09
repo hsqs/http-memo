@@ -84,5 +84,12 @@ Content-length: 444
 <head>
 <title>ruokay</title>
 </head>
+... ...
 </html>
 ```
+
+### 1.6 连接
+
+##### 1.6.1 TCP/IP
+&emsp;&emsp;1、HTTP无需操心网络通信的具体细节，它把联网的细节都交给了通用可靠的英特网传输协议TCP/IP。
+&emsp;&emsp;2、TCP提供了a)无差错的数据传输。b)按序传输。c)未分段的数据流。
