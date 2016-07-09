@@ -93,3 +93,50 @@ Content-length: 444
 ##### 1.6.1 TCP/IP
 &emsp;&emsp;1、HTTP无需操心网络通信的具体细节，它把联网的细节都交给了通用可靠的英特网传输协议TCP/IP。
 &emsp;&emsp;2、TCP提供了a)无差错的数据传输。b)按序传输。c)未分段的数据流。
+
+##### 1.6.2 连接、IP地址及端口号
+&emsp;&emsp;建立一条TCP连接过程：  
+&emsp;&emsp; 1. 浏览器从URL中解析得到服务器的主机名  
+&emsp;&emsp; 2. 浏览器讲服务器的主机名转换成对应的服务器IP地址  
+&emsp;&emsp; 3. 浏览器讲端口号（如果有）从URL中解析出来  
+&emsp;&emsp; 4. 浏览器建立一条鱼Web服务器的TCP连接  
+&emsp;&emsp; 5. 浏览器向服务器发送一条HTTP请求报文  
+&emsp;&emsp; 6. 服务器向浏览器回送一条HTTP报文  
+&emsp;&emsp; 7. 关闭连接，浏览器显示文档  
+
+##### 1.6.3 一个使用Telnet的实例
+
+&emsp;&emsp;1、HTTP报文是文本形式，可以方便的与服务器进行对话
+&emsp;&emsp;2、可以通过Telnet直接与服务器对话，Web服务器的响应会显示到屏幕上。
+```shell
+$ telnet www.joes-hardware.com 80
+Trying 161.58.228.45...
+Connected to joes-hardware.com.
+Escape character is '^]'.
+GET /tools.html HTTP/1.1
+Host: www.joes-hardware.com
+
+HTTP/1.1 200 OK
+... ...
+```
+&emsp;&emsp;3、Telnet可以很好的模拟客户端，但不能作为服务器使用。
+
+### 1.7 协议版本
+&emsp;&emsp;目前仍在使用的版本：
+
+|版本号|描述|
+|---|---|
+|HTTP/0.9| 该版本存在严重缺陷，只能用于老版本客户端中。只支持GET方法，不支持多媒体内容的MIME类型、各种HTTP首部，设计初衷只是为了传递简单的HTML对象|
+|HTTP/1.0| 添加了对各种版本号、首部、一些额外方法的支持。|
+|HTTP/1.1| 重点关注校正HTTP设计中的结构性缺陷、明确语义，引入重要的性能优化措施，并删除一些不好的特性。是当前使用的HTTP版本|
+|HTTP-NG (HTTP/2.0)|重点关注性能的大幅优化、以及更强大的服务逻辑远程执行框架（什么鬼）|
+
+### 1.8 Web结构组件
+
+|组件名称|描述|
+|--|--|
+|代理|位于客户端和服务器之间的HTTP中间实体|
+|缓存|HTTP仓库，保存页面副本到离客户端更近的地方|
+|网关|连接其他应用程序的特殊Web服务器，通常用于将HTTP流量转换成其他协议|
+|隧道|对HTTP报文进行盲转发的特殊代理，常见用途是通过HTTP连接承载加密的SSL流量，这样SSL流量就可以穿过只允许Web流量通过的防火墙了|
+|Agent代理|发起自动HTTP请求的半智能Web客户端，即网络爬虫、网络机器人等|
