@@ -9,7 +9,7 @@
 ```xml
 <schema>://<user>:<password>@<host>:<port>/<path>;<params>?<query>#<frag>
 ```
-&emsp;&emsp;几乎没有哪个URL包含所有这些组件，最重要的三部分是 schema, host, path。各部分解释如下：
+&emsp;&emsp;几乎没有哪个URL包含所有这些组件，最重要的三部分是 schema, host, path。各部分解释如下：  
 
 | 组件 | 描述                                                                                        | 默认值                   |
 | --   | --                                                                                         | --                       |
