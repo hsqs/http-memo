@@ -1,7 +1,7 @@
 # Part02 URL与资源
 
 ### 2.1 浏览网络资源
-&emsp;&emsp;URL可以他通过HTTP及之外的协议来访问资源。他们可以指向网络上的任意资源，或者个人E-mail账户：mailto:president@whitehouse.gov，或者通过其他协议访问各种文件：ftp://ftp.lots-o-books.com/book.xls，或者从流视频服务器上下载电影：rstp://www.xxx.com:1234/video/1/。
+&emsp;&emsp;URL可以他通过HTTP及之外的协议来访问资源。他们可以指向网络上的任意资源，或者个人E-mail账户：mailto:president@whitehouse.gov，或者通过其他协议访问各种文件：ftp://ftp.xxx.com/book.xls，或者从流视频服务器上下载电影：rstp://www.xxx.com:1234/video/1/。
 
 ### 2.2 URL语法
 
