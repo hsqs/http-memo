@@ -247,6 +247,7 @@ server: test server head is
  - 条件请求首部
 &emsp;&emsp;客户端希望对请求加上某些限制时使用（还记得304么？）。
 
+
 |首部|描述|
 |----——|-----|
 |Expect|列出客客户端希望服务器应有的行为|
@@ -256,6 +257,7 @@ server: test server head is
 |If-Range|允许对文档的某个范围进行条件请求|
 |If-Unmodified-Since|在指定时间后没有修改过该资源时返回该文档|
 |Range|如果服务器支持范围请求，就返回资源指定的范围|
+
 
  - 安全请求首部
 &emsp;&emsp;常用安全首部：
@@ -284,3 +286,4 @@ server: test server head is
 |Retry-After|如果资源不可用，在此时间或日期重试|
 |Server|服务器程序的名称和版本|
 |Warning|比原有短语更详细一些的警告报文|
+
