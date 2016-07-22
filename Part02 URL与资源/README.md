@@ -50,7 +50,7 @@ http://www.xxx.com/hammer;sale=false/index.html;graphics=true
 
 ##### 2.3.1 相对URL
 &emsp;&emsp;1、相对URL是不完整的，需要相对于基础URL进行解析。解析流程：
-![](https://github.com/hsqs/http-memo/blob/master/Part02%20URL%E4%B8%8E%E8%B5%84%E6%BA%90/%E7%9B%B8%E5%AF%B9%E8%B7%AF%E5%BE%84%E8%BD%AC%E6%8D%A2%E4%B8%BA%E7%BB%9D%E5%AF%B9%E8%B7%AF%E5%BE%84%E6%B5%81%E7%A8%8B%E5%9B%BE.png)
+![](./相对路径转换为绝对路径流程图.png)
 
 ### 2.4 各种令人头疼的字符
 &emsp;&emsp;1、URL在传递过程中必须保持完整，但有些协议（SMTP）为了安全会剥去一些特定的字符，为了避免这样的问题，URL只能使用一些相对较小、通用安全的字母表中的字符。  
