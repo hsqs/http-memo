@@ -93,6 +93,85 @@
 &emsp;&emsp;4、所以如果这个小的时间段内，有大量的连接出现，会将端口耗尽。   
 &emsp;&emsp;5、为了避免这个问题，可以增加客户端负载生成机器的数量。或者服务端和客户端循环使用虚拟IP来增加可用连接数。   
 
+### 4.3 HTTP连接的处理
+
+##### 4.3.1 常被误解的Connection首部
+&emsp;&emsp;1、在某些情况下加，两个相邻的HTTP应用程序会为他们共享的连接应用一组选项。HTTP的Connection首部字段中有一个由逗号分隔的**连接标签列表**，这些标签为此连接指定了一些不会传播到其他连接中去的选项。例如Connection:close说明发送完下一条报文后必须关闭连接。   
+&emsp;&emsp;2、Connection首部可以承载3种不同类型的标签，有时令人费解：  
+&emsp;&emsp;1）HTTP首部字段名，列出只与本条连接有段的首部   
+&emsp;&emsp;2）任意标签值，与此连接的非标准选项   
+&emsp;&emsp;3）close，说明操作完成后关闭这条非持久化连接   
+&emsp;&emsp;如果连接中包含HTTP首部字段的名称，接收者会解析并应用这些首部，但在报文转发出去之前，必须删除Connection首部的所有字段。由于Connection首部可以防止无意中对本地首部的转发，因此将逐跳首部放入Connection首部被称为**对首部的保护**。
+
+##### 4.3.2 串行事务处理时延
+&emsp;&emsp;串行事务的缺点是给人感觉很慢，页面假死。另外浏览器需要知道资源尺寸后才能正常显示，对用户来说就是浏览器空白着。
+
+### 4.4 并行连接
+&emsp;&emsp;HTTP允许客户端打开多条连接，并行的执行多个HTTP事务。
+
+##### 4.4.1 并行连接**可能**会提高页面的加载速度
+&emsp;&emsp;1、在带宽较小，多条连接会竞争加载导致变慢。另外如果连接太多消耗太多资源也会变慢。
+&emsp;&emsp;2、浏览器确实会使用并行连接，但限制在较小的数量（通常4个）。服务器也可以随意关闭来自某个客户端的超量连接。
+
+### 4.5 持久连接
+
+&emsp;&emsp;1、页面内容较多时，有一直有连接连到服务器。因此，在初始化了对服务器的连接后，很有可能会在不久的将来对服务器发起更多的连接。这也叫**站点局部性**。   
+&emsp;&emsp;2、因此，1.1版本中，允许在事务处理结束后，将TCP连接保持在打开状态，以便为将来的HTTP请求重用。这种连接也叫**持久化连接**。   
+&emsp;&emsp;3、持久化连接会在不同事务之间保持打开，直到客户端或者服务端绝对关闭它为止。  
+&emsp;&emsp;4、持久连接的好处是避开缓慢的建立连接过程和慢启动过程。  
+
+##### 4.5.1 持久及并行连接
+&emsp;&emsp;1、持久连接减少了打开连接的潜在数量。但管理持久连接要小心，不然会积累出大量空闲连接而耗费资源。  
+&emsp;&emsp;2、持久连接和并行连接配合可能是最高效的方式。  
+&emsp;&emsp;3、持久连接分两种，老的HTTP/1.0和keep-alive和HTTP/1.1的persistent连接。  
+
+##### 4.5.2 HTTP/1.0 + keep-alive连接
+&emsp;&emsp;持久连接去除了慢启动阶段，请求和响应时间也有可能缩减。
+
+##### 4.5.3 keep-alive操作
+&emsp;&emsp;1、keep-alive在1.1规范里不再说明（弃用），但浏览器和服务器一栏使用keep-alive握手。   
+&emsp;&emsp;握手过程：   
+&emsp;&emsp;2、实现了keep-alive连接的客户端可以通过包含Connection:Keep-Alive首部，将这条连接保持在打开状态。   
+&emsp;&emsp;3、如果服务器也愿意保持连接，就回送一个也包含Connection:Keep-Alive的首部。   
+&emsp;&emsp;4、如果响应中没有该首部，客户端就认为服务器不支持keep-alive，会在发送响应报文后关闭连接。   
+
+##### 4.5.4 Keep-Alive选项
+&emsp;&emsp;1、注意，客户端和服务器都可以 1⃣️ 发起keep-alive连接 2⃣️ 是否要保持keep-alive连接。   
+&emsp;&emsp;2、可以用Keep-Alive通用首部指定由逗号隔开的选项来调节keep-alive行为：   
+&emsp;&emsp;① timeout参数在Keep-Alive响应首部发送，估计了服务器希望将连接保持的时间，但这并不是承诺值。   
+&emsp;&emsp;② max在Keep-Alive首部发送，估计了服务器希望为多少个事务保持连接的活跃状态，但并不是承诺值。   
+&emsp;&emsp;③ 支持的其他任意未经处理的特性，用于诊断和调试。语法为 name[=value]。     
+&emsp;&emsp;3、Keep-Alive首部完全是可选的，但只在提供了Connection:Keep-Alive时才能使用它。   
+&emsp;&emsp;4、一个Keep-Alive首部🌰：
+
+```
+Connection:Keep-Alive
+Keep-Alive:max=5, timeout=120
+```
+&emsp;&emsp;这里服务器还会为另外五个事务保持连接的打开状态，或者在连接空闲了后，保持该连接2分钟。
+
+##### 4.5.5 Keep-Alive连接的限制和规则
+&emsp;&emsp;1、1.0中Keep-Alive不是默认打开的，客户端要发送Connection:Keep-Alive首部来激活。   
+&emsp;&emsp;2、keep-alive首部必须随所有希望保持持久连接的报文一起发送，否则服务器在没收到该首部后关闭连接。   
+&emsp;&emsp;3、客户端也可以检测有无该首部来判断服务器发出响应后是否关闭连接。  
+&emsp;&emsp;4、（拗口描述预警）只有在无需检测到连接的关闭即可确定报文实体部分长度的情况下，才能将连接保持在打开状态——也就是说，实体的主体部分必须有正确的Content-Length，有多媒体类型，或者用分块传输编码的方式进行了编码。在一条keep-alive信道中发送错误的Content-Length是很糟糕的事，这样事务的另一端就无法精确的检测一条报文的结束和另一条报文的开始。
+&emsp;&emsp;5、代理和网关必须执行Connection首部的规则。   
+&emsp;&emsp;6、严格的说，不该与无法确认支持Connection首部的代理服务器建立keep-alive连接，以防止哑代理出现，但现实中总无法避免。   
+&emsp;&emsp;7、技术上应该忽略来自HTTP/1.0的Connection首部，实际上，尽管可能会有在老服务器上挂起的危险，有些客户端和服务器还是会违反这个规则。   
+&emsp;&emsp;8、如果客户端收到完整响应前连接关闭，客户端要做好重试准备。
+
+##### 4.5.6 Keep-Alive和哑代理
+&emsp;&emsp;Connection:Keep-Alive首部只会对这条离开的TCP链路产生影响。这就是称作其为“连接首部”的原因。
+
+&emsp;&emsp;1）Connection首部和盲中继   
+&emsp;&emsp;1、问题出在不理解Connection首部的代理商。特别是在转发之前不知道将Connection首部删除的代理。   
+&emsp;&emsp;2、很多老的、简单的代理都是**盲中继**，它们只是将字节从一个连接转发到另一个连接，不对Connection首部做处理。    
+<center>![keep-alive无法与不支持Connection的代理互操作](./resource/4-15.png)</center>
+<center>keep-alive无法与不支持Connection的代理互操作</center>
+
+
+
+
 
 
 
