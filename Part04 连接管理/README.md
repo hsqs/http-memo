@@ -169,7 +169,38 @@ Keep-Alive:max=5, timeout=120
 <center>![keep-alive无法与不支持Connection的代理互操作](./resource/4-15.png)</center>
 <center>keep-alive无法与不支持Connection的代理互操作</center>
 
-test
+&emsp;&emsp;上图解释：  
+&emsp;&emsp;1. 哑代理接受HTTP请求，但并不知道Connection首部的含义，然后会一字不漏的转发给服务器。由于Connection首部是**逐跳**首部，只适用于单条传输链路，不应该沿着传输链路向下传输。   
+&emsp;&emsp;2. 服务器收到请求，误以为代理希望进行keep-alive对话，并回送Connection:Keep-Alive首部。  
+&emsp;&emsp;3. 客户端收到后，认为服务器同意keep-alive对话，此时客户端和服务端都认为在进行keep-alive对话。  
+&emsp;&emsp;4. 但中间的代理并不知道keep-alive是神马，于是就一直等待源端服务器关闭连接，但源端服务器认为这是keep-alive连接，是不会关闭连接的。这样，代理服务器就会挂在那里，一直等待关闭。  
+&emsp;&emsp;5. 客户端收到响应，在keep-alive上发送二次请求时，但代理不会认为有请求，会忽略客户端的二次请求，这时浏览器就一直转圈不会有任何进展。这种错误导致浏览器一直挂起，直到超时，服务端或者客户端将连接关闭为止。   
+&emsp;&emsp;6. 很多类似情形，盲中继的握手和转发都会导致这个问题。  
+
+&emsp;&emsp;2）代理和逐跳首部
+&emsp;&emsp;1、为了避免上述问题，现代代理都不能转发Connection首部和所有出现在Connection首部的名字。
+&emsp;&emsp;2、除此之外，代理也不能转发缓存相关首部，包括Proxy-Authorization、Proxy-Connection、Transfer-Encoding和Upgrade。
+
+##### 4.5.7 插入Proxy-Connection
+&emsp;&emsp;1、NetScape最盲中继提出了变通的做法，不要求所有web应用程序都支持高版本HTTP。   
+&emsp;&emsp;2、通过引入Proxy-Connection首部，解决了客户端后面**紧跟**盲中继带来的问题，但并没有解决所有其他情况下存在的问题。现代浏览器很多都能理解这个首部。   
+&emsp;&emsp;3、如果代理比较笨，直接转发Proxy-Connection，不会造成问题。如果代理比较聪明，会把Proxy-Connection用Connection首部取代，达到预期效果。  
+&emsp;&emsp;4、但哑代理和聪明代理同时出现，还是会导致上面的问题。而且，网络中代理可以是防火墙、拦截缓存等，对浏览器不可见，所以浏览器不会发送Proxy-Connection。透明的web应用程序正确的实现持久化连接非常的重要。   
+
+##### 4.5.8 HTTP/1.1 持久连接
+&emsp;&emsp;1、1.1逐渐停止了对keep-alive的支持，用名为**持久连接（persistent connection）**来代替。   
+&emsp;&emsp;2、默认情况下，持久连接是激活的。如果要关闭连接，必须在报文中显示的添加Connection:close首部。   
+&emsp;&emsp;3、但是，客户端和服务器也可以随时关闭连接，不发送Connection:close并不是承诺将连接一直保持在打开状态。   
+
+##### 4.5.9 持久连接的限制和规则
+&emsp;&emsp;1、实体部分长度和Content-Length一致时，或者是用分块传输编码方式编码时，连接才能保持持久。   
+&emsp;&emsp;2、每个持久连接只适用于一跳传输。   
+&emsp;&emsp;3、由于老代理会转发Connection首部，所以1.1的服务器应拒绝和1.0的服务器建立持久连接。但实际大多厂商违背这个原则。   
+&emsp;&emsp;4、1.1的设备可以在任意时刻关闭连接。   
+&emsp;&emsp;5、1.1的应用程序能够从异步的关闭中恢复过来，即重试这条请求。   
+&emsp;&emsp;6、一个客户端对任何代理只能维持至多两个持久连接，如果有N个用户试图访问服务器，代理上至多维护2N个持久连接。   
+
+#### 4.6 管道化连接
 
 
 
